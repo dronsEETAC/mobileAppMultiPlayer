@@ -1,0 +1,8 @@
+{
+  "name": "DroneMobileAppVueDEE",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue",
+  "id": "4aecd662"
+}
