@@ -88,8 +88,9 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, inject, ref } from 'vue';
+import { defineComponent, inject, onMounted, ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonInput, IonRow, IonCol, IonLabel } from '@ionic/vue';
+import { useMQTT } from 'mqtt-vue-hook'
 
 export default  defineComponent({
   name: 'AutopilotPage',
@@ -98,7 +99,7 @@ export default  defineComponent({
   setup() {
 
     const emitter = inject('emitter');
-    let client = inject('mqttClient');
+    const mqttHook = useMQTT()
     let connected = ref(false);
     let altitude = ref(undefined);
     let current_lat = ref(undefined);
@@ -111,47 +112,45 @@ export default  defineComponent({
     let position = ref(undefined);
 
     onMounted(() => {
-      client.on("message", function(topic, message){
-        if (topic == "autopilotService/mobileApp/droneHeading") {
-          heading.value = message
-        }
+      mqttHook.registerEvent('autopilotService/mobileApp/droneHeading', (topic, message) => {
+        heading.value = message
+      })
 
-        if (topic == "autopilotService/mobileApp/dronePosition") {
-          position.value = message
-        }
+      mqttHook.registerEvent('autopilotService/mobileApp/dronePosition', (topic, message) => {
+        position.value = message
+      })
 
-        if (topic == "autopilotService/mobileApp/droneAltitude") {
-          currentAltitude.value = message
-        }
-        
-        if (topic == "autopilotService/mobileApp/droneGroundSpeed") {
-          groundSpeed.value = message
-        }
+      mqttHook.registerEvent('autopilotService/mobileApp/droneAltitude', (topic, message) => {
+        currentAltitude.value = message
+      })
+
+      mqttHook.registerEvent('autopilotService/mobileApp/droneGroundSpeed', (topic, message) => {
+        groundSpeed.value = message
       })
     })
 
     function armDrone() {
       connected.value = true
-      client.publish("mobileApp/autopilotService/armDrone", "")
+      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1)
     }
 
     function disarmDrone() {
       connected.value = false
-      client.publish("mobileApp/autopilotService/disarmDrone", "")
+      mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
     }
 
     function getDroneHeading() {
-      client.publish("mobileApp/autopilotService/getDroneHeading", "")
-      client.subscribe("autopilotService/mobileApp/droneHeading")
+      mqttHook.publish("mobileApp/autopilotService/getDroneHeading", "", 1)
+      mqttHook.subscribe("autopilotService/mobileApp/droneHeading", 1)
     }
 
     function takeOff() {
-      client.publish("mobileApp/autopilotService/takeOff", altitude.value)
+      mqttHook.publish("mobileApp/autopilotService/takeOff", altitude.value, 1)
     }
 
     function getActualPosition(){
-      client.publish("mobileApp/autopilotService/getDronePosition")
-      client.subscribe("autopilotService/mobileApp/dronePosition")
+      mqttHook.publish("mobileApp/autopilotService/getDronePosition", "", 1)
+      mqttHook.subscribe("autopilotService/mobileApp/dronePosition", 1)
       let fromBytesToString = ref(undefined)
       fromBytesToString.value = new TextDecoder("utf-8").decode(position.value)
       let positionSplitted = fromBytesToString.value.split("*")
@@ -160,22 +159,22 @@ export default  defineComponent({
     }
 
     function getGroundSpeed(){
-      client.publish("mobileApp/autopilotService/getDroneGroundSpeed", "")
-      client.subscribe("autopilotService/mobileApp/droneGroundSpeed")
+      mqttHook.publish("mobileApp/autopilotService/getDroneGroundSpeed", "", 1)
+      mqttHook.subscribe("autopilotService/mobileApp/droneGroundSpeed", 1)
     }
 
     function getCurrentAltitude(){
-      client.publish("mobileApp/autopilotService/getDroneAltitude", "")
-      client.subscribe("autopilotService/mobileApp/droneAltitude")
+      mqttHook.publish("mobileApp/autopilotService/getDroneAltitude", "", 1)
+      mqttHook.subscribe("autopilotService/mobileApp/droneAltitude", 1)
     }
 
     function goToPosition(){
       let positionStr = goToLat.value + "*" + goToLng.value
-      client.publish("mobileApp/autopilotService/goToPosition", positionStr)
+      mqttHook.publish("mobileApp/autopilotService/goToPosition", positionStr, 1)
     }
 
     function returnToLaunch(){
-      client.publish("mobileApp/autopilotService/returnToLaunch", "")
+      mqttHook.publish("mobileApp/autopilotService/returnToLaunch", "", 1)
     }
 
     return {

@@ -23,32 +23,33 @@
 </template>
 
 <script>
-import { defineComponent, inject, ref } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonContent, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle } from '@ionic/vue';
+import { useMQTT } from 'mqtt-vue-hook'
 
 export default  defineComponent({
   name: 'LEDsPage',
-  components: { IonHeader, IonToolbar, IonContent, IonPage, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle },
+  components: { 
+    IonHeader, IonToolbar, IonContent, IonPage, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle 
+  },
 
   setup() {
-    let client = inject('mqttClient');
-    // eslint-disable-next-line
-    const emitter = inject('emitter');
     let seconds = ref("");
     let connected = ref(true);
+    const mqttHook = useMQTT()
 
     function startLedSequence(){
       connected.value = false
-      client.publish("mobileApp/LEDsService/startLEDsSequence", "")
+      mqttHook.publish("mobileApp/LEDsService/startLEDsSequence", "", 1)
     }
 
     function startNsecondsLedSequence(){
-      client.publish("mobileApp/LEDsService/LEDsSequenceForNSeconds", seconds.value)
+      mqttHook.publish("mobileApp/LEDsService/LEDsSequenceForNSeconds", seconds.value.toString(), 1)
     }
 
     function stopLedSequence(){
       connected.value = true
-      client.publish("mobileApp/LEDsService/stopLEDsSequence", "")
+      mqttHook.publish("mobileApp/LEDsService/stopLEDsSequence", "", 1)
     }
 
     return {
@@ -57,7 +58,6 @@ export default  defineComponent({
         stopLedSequence,
         connected,
         seconds,
-        client
     };
   },
 });

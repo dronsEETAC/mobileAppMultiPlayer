@@ -12,12 +12,19 @@
 </template>
   
 <script>
-  import { defineComponent } from 'vue';
+  import { defineComponent, onMounted } from 'vue';
   import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/vue';
+  import { useMQTT } from 'mqtt-vue-hook'
   
   export default  defineComponent({
     name: 'ComponentTab',
-    components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton }
+    components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton },
+
+  setup() {
+    const mqttHook = useMQTT()
+    onMounted(() => {
+      mqttHook.publish("mobileApp/gate/connectPlatform", "", 1)
+    })}
   });
 </script>
 

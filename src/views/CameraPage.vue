@@ -47,97 +47,107 @@
 
 <script>
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonRow, IonCol, IonList, IonItem, IonSelect, IonSelectOption } from '@ionic/vue';
-import { onMounted,defineComponent, inject, ref } from 'vue'
+import { onMounted,defineComponent, ref } from 'vue'
 import * as cv from 'opencv.js'
+import { useMQTT } from 'mqtt-vue-hook'
+
+const mqttHook = useMQTT()
 
 export default  defineComponent({
   name: 'CameraPage',
   components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton, IonRow, IonCol, IonList, IonItem, IonSelect, IonSelectOption },
 
   setup () {
-    let client = inject('mqttClient');
-    let mode = ref('Normal');
-
+    let mode = ref('Normal');   
+        
     onMounted(() => {
-      client.on('message', (topic, message) => {
-        if ((topic == "cameraService/mobileApp/videoFrame") || (topic == "cameraService/mobileApp/picture")) {
+
+      const openCVFunction = {
+        options: function (topic, message) {
           const img = new Image();
           img.src = "data:image/jpg;base64,"+message;
           img.onload = () => {  
-              let dst = new cv.Mat();
-              let source = cv.imread(img);
-              cv.cvtColor(source, source, cv.COLOR_RGB2GRAY, 0);
+            let dst = new cv.Mat();
+            let source = cv.imread(img);
+            cv.cvtColor(source, source, cv.COLOR_RGB2GRAY, 0);
 
-              if (mode.value == 'Shovel'){
-                cv.Sobel(source, dst, cv.CV_8U, 1, 0, 3, 1, 0, cv.BORDER_DEFAULT);
-              }
+            if (mode.value == 'Shovel'){
+              cv.Sobel(source, dst, cv.CV_8U, 1, 0, 3, 1, 0, cv.BORDER_DEFAULT);
+            }
 
-              if (mode.value == 'Scharr') {
-                cv.Scharr(source, dst, cv.CV_8U, 1, 0, 1, 0, cv.BORDER_DEFAULT);
-              }
+            if (mode.value == 'Scharr') {
+              cv.Scharr(source, dst, cv.CV_8U, 1, 0, 1, 0, cv.BORDER_DEFAULT);
+            }
 
-              if (mode.value == 'Laplacian') {
-                cv.Laplacian(source, dst, cv.CV_8U, 1, 1, 0, cv.BORDER_DEFAULT);
-              }
+            if (mode.value == 'Laplacian') {
+              cv.Laplacian(source, dst, cv.CV_8U, 1, 1, 0, cv.BORDER_DEFAULT);
+            }
 
-              if (mode.value == 'Normal'){
-                dst = cv.imread(img);
-              }
+            if (mode.value == 'Normal'){
+              dst = cv.imread(img);
+            }
 
-              if (mode.value == 'Gray') {
-                let mat = cv.imread(img);
-                dst = new cv.Mat();
-                cv.cvtColor(mat, dst, cv.COLOR_RGB2GRAY,0);
-                mat.delete()
-              }
+            if (mode.value == 'Gray') {
+              let mat = cv.imread(img);
+              dst = new cv.Mat();
+              cv.cvtColor(mat, dst, cv.COLOR_RGB2GRAY,0);
+              mat.delete()
+            }
 
-              if (mode.value == 'Canny') {
-                let mat = cv.imread(img);
-                dst = new cv.Mat();
-                cv.cvtColor(mat, dst, cv.COLOR_RGB2GRAY,0);
-                cv.Canny(mat, dst, 50, 100, 3, false);
-                mat.delete()
-              }
+            if (mode.value == 'Canny') {
+              let mat = cv.imread(img);
+              dst = new cv.Mat();
+              cv.cvtColor(mat, dst, cv.COLOR_RGB2GRAY,0);
+              cv.Canny(mat, dst, 50, 100, 3, false);
+              mat.delete()
+            }
 
-              if(mode.value == 'Blued'){
-                let mat = cv.imread(img);
-                dst = new cv.Mat();
-                cv.cvtColor(mat, dst, cv.COLOR_RGB2XYZ,0);
-                mat.delete()
-              }
-              
-              if(mode.value == 'Pinked'){
-                let mat = cv.imread(img);
-                dst = new cv.Mat();
-                cv.cvtColor(mat, dst, cv.COLOR_RGB2YCrCb,0);
-                mat.delete()
-              }
+            if(mode.value == 'Blued'){
+              let mat = cv.imread(img);
+              dst = new cv.Mat();
+              cv.cvtColor(mat, dst, cv.COLOR_RGB2XYZ,0);
+              mat.delete()
+            }
+            
+            if(mode.value == 'Pinked'){
+              let mat = cv.imread(img);
+              dst = new cv.Mat();
+              cv.cvtColor(mat, dst, cv.COLOR_RGB2YCrCb,0);
+              mat.delete()
+            }
 
-              cv.imshow('output',dst);
-            };
-          }
-        })
+            cv.imshow('output',dst);
+          };
+        }
+      }
+      
+      mqttHook.registerEvent('cameraService/mobileApp/videoFrame', (topic, message) => {
+        openCVFunction.options(topic, message)
+      })
+
+      mqttHook.registerEvent('cameraService/mobileApp/picture', (topic, message) => {
+        openCVFunction.options(topic, message)
+      })
     })
     
     function startVideoStream () {
-      client.publish("mobileApp/cameraService/startVideoStream", "")
-      client.subscribe("cameraService/mobileApp/videoFrame");
+      mqttHook.publish("mobileApp/cameraService/startVideoStream", "", 1)
+      mqttHook.subscribe("cameraService/mobileApp/videoFrame", 1);
     }
 
       function stopVideoStream () {
-      client.publish("mobileApp/cameraService/stopVideoStream", "")
+      mqttHook.publish("mobileApp/cameraService/stopVideoStream", "", 1)
     }
 
     function takePicture () {
-      client.publish("mobileApp/cameraService/takePicture", "")
-      client.subscribe("cameraService/mobileApp/picture")
+      mqttHook.publish("mobileApp/cameraService/takePicture", "", 1)
+      mqttHook.subscribe("cameraService/mobileApp/picture", 1)
     }
     
     return {
         startVideoStream,
         stopVideoStream,
         takePicture,
-        client,
         mode
     }
   }

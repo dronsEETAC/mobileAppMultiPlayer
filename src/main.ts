@@ -33,24 +33,19 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import mitt from 'mitt';
 const emitter = mitt();
 
-import * as mqtt from "mqtt"
+import mqttVueHook from 'mqtt-vue-hook'
 
 const app = createApp(App)
 app.use(IonicVue)
 app.use(router) 
 
 app.provide('emitter', emitter);
-let client : mqtt.MqttClient;
-try {
-    client = mqtt.connect('mqtt://localhost:8083')
-    client.on('connect', () => {
-        console.log('Connection succeeded!');
-        client.publish("mobileApp/gate/connectPlatform", "")
-        app.provide('mqttClient', client);
-    })
-} catch (error) {
-    console.log('mqtt.connect error', error)
-}
+app.use(mqttVueHook, 'mqtt://localhost:8083', {
+  clean: false,
+  keepalive: 60,
+  clientId: 'MobileAppDEE',
+  connectTimeout: 4000,
+})
 
 router.isReady().then(() => {
     app.use(BootstrapVue3)
