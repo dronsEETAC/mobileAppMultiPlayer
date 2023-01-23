@@ -1,5 +1,6 @@
 # IonicVueMobileAppDEE
-![IonicAppDemo](https://user-images.githubusercontent.com/100842082/213977515-18a574c0-9e89-4d89-9d1c-68a8e6527141.png)
+![IonicAppDemo](https://user-images.githubusercontent.com/100842082/213981154-11cb3b23-81cc-4eac-ad5d-25c1dac7714a.png)
+
 
 The IonicVueMobileAppDEE is a front-end module developed in Ionic Vue. It allows the user to do a bunch of things, including:
 - Showing the picture/video stream sent by the camera service
