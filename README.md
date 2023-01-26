@@ -10,7 +10,7 @@ The IonicVueMobileAppDEE is a front-end module developed in Ionic Vue. It allows
 
 ## Demo
 This video es a short demo of some of the functionalities of the Mobile APP.   
-[Ionic App in action](https://youtu.be/08v7_bG5FcM)   
+[Ionic App in action](https://www.youtube.com/watch?v=iDihSNpX-gs)   
 
 In the video:
 1. A mosquitto broker is started in port 1884. This will serve as internal broker.   
