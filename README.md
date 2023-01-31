@@ -26,7 +26,8 @@ In the video:
 
 ## Installation and contribution
 In order to run and contribute to the modules implemented in Vue, you need to install Node.js (version v16.14.2) and @vue/cli version 4.5.15 and @ionic/cli (in case of the Mobile app). We recomend Visual Code as IDE for development in Vue.    
-To contribute to must follow the contribution protocol describen in the main repo of the Drone Engineering Ecosystem.    
+To contribute to must follow the contribution protocol describen in the main repo of the Drone Engineering Ecosystem.
+[![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-MainRepo-brightgreen.svg)](https://github.com/dronsEETAC/DroneEngineeringEcosystemDEE)
 To run the application, after cloning the repo in your laptop you must execute these commands:
 ```
 cd IonicVueMobileAppDEE
