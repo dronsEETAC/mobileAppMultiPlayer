@@ -25,7 +25,7 @@ In the video:
 10. The app takes a pictures and gets the video stream, introducing different alterations in the image (gray, canny, etc.).     
 
 ## Installation and contribution
-To run and contribute you need to install..
+In order to run and contribute to the modules implemented in Vue, you need to install Node.js (version v16.14.2) and @vue/cli version 4.5.15 and @ionic/cli (in case of the Mobile app). We recomend Visual Code as IDE for development in Vue.    
 To contribute to must follow the contribution protocol describen in the main repo of the Drone Engineering Ecosystem.    
 To run the application, after cloning the repo in your laptop you must execute these commands:
 ```
