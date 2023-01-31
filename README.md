@@ -24,4 +24,15 @@ In the video:
 9. The app arms, takes offa and moves the drone in different directions before returning home. Some telemetry data are shown.    
 10. The app takes a pictures and gets the video stream, introducing different alterations in the image (gray, canny, etc.).     
 
+## Installation and contribution
+To run and contribute you need to install..
+To contribute to must follow the contribution protocol describen in the main repo of the Drone Engineering Ecosystem.    
+To run the application, after cloning the repo in your laptop you must execute these commands:
+```
+cd IonicVueMobileAppDEE
+npm install
+npm run serve
+```
+
+
 
