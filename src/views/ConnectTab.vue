@@ -6,7 +6,7 @@
         </ion-toolbar>
       </ion-header>
       <ion-content :fullscreen="true">
-        <ion-button class="connectButton" href = "/tabs">Connect</ion-button>
+        <ion-button @click = 'connect' class="connectButton" href = "/tabs">Connect to the external broker</ion-button>
       </ion-content>
     </ion-page>
 </template>
@@ -20,12 +20,21 @@
     name: 'ComponentTab',
     components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton },
 
-  setup() {
-    const mqttHook = useMQTT()
-    onMounted(() => {
-      mqttHook.publish("mobileApp/gate/connectPlatform", "", 1)
-    })}
-  });
+    setup() {
+      const mqttHook = useMQTT()
+      onMounted(() => {
+        //mqttHook.publish("mobileApp/autopilotService/connect", "", 1)
+      })
+      
+      function connect () {
+        mqttHook.publish("mobileApp/autopilotService/connect", "", 1)
+      }
+      return {
+        connect
+
+      }
+    }
+  })
 </script>
 
 <style>

@@ -6,132 +6,174 @@
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
-      <ion-button v-if = "!connected" class="armDisarmButton" color="tertiary" @click="armDrone">Arm drone</ion-button>
-      <ion-button v-if = "connected" class="armDisarmButton" color="tertiary" @click="disarmDrone">Disarm drone</ion-button>
-      <ion-row v-if = "connected">
-        <ion-col col-3>
-          <ion-button style="width: 100%; height: 100%" @click="getDroneHeading">Get Heading</ion-button>
+      <div style = "width:80%; margin-left:10%">
+      <ion-button v-if = "state != 'arming' && state != 'takingOff'  && !flying && !armed" class="autopilotButton" color="tertiary" @click="armDrone">Arm drone</ion-button>
+      <ion-button v-if = "state == 'arming'" class="autopilotButton" :disabled = "true" color="secondary">Arming...</ion-button>
+      <ion-button v-if = "armed" class="autopilotButton" :disabled = "true" color="primary">Armed</ion-button>
+
+      <ion-button  v-if = "state != 'takingOff' && !flying" class="autopilotButton" :disabled = "!armed" color="tertiary" @click="takeOff">Take off</ion-button>
+      <ion-button  v-if = "state == 'takingOff'" class="autopilotButton" :disabled = "true" color="secondary" >Taking off ...</ion-button>
+      <ion-button  v-if = "flying" class="autopilotButton" :disabled = "true" color="primary" >Flying</ion-button>
+
+
+
+      <div class="direction">
+        <div v-if = "direction != 'NorthWest'" id="NorthWest" v-on:click="go($event)" class="box">NW</div>
+        <div v-if = "direction == 'NorthWest'" id="NorthWest" v-on:click="go($event)" class="box2">NW</div>
+
+        <div v-if = "direction != 'North'" id="North" v-on:click="go($event)" class="box" >N</div>
+        <div v-if = "direction == 'North'" id="North" v-on:click="go($event)" class="box2" >N</div>
+
+        <div v-if = "direction != 'NorthEast'" id="NorthEst" v-on:click="go($event)" class="box">NE</div>
+        <div v-if = "direction == 'NorthEast'" id="NorthEst" v-on:click="go($event)" class="box2">NE</div>
+
+        <div v-if = "direction != 'West'" id="West" v-on:click="go($event)" class="box">W</div>
+        <div v-if = "direction == 'West'" id="West" v-on:click="go($event)" class="box2">W</div>
+
+        <div v-if = "direction != 'Stop'" id="Stop" v-on:click="go($event)" class="box">STOP</div>
+        <div v-if = "direction == 'Stop'" id="Stop" v-on:click="go($event)" class="box2">STOP</div>
+
+        <div v-if = "direction != 'East'"  id="East" v-on:click="go($event)" class="box">E</div>
+        <div v-if = "direction == 'East'"  id="East" v-on:click="go($event)" class="box2">E</div>
+
+        <div v-if = "direction != 'SouthWest'" id="SouthWest" v-on:click="go($event)" class="box">SW</div>
+        <div v-if = "direction == 'SouthWest'" id="SouthWest" v-on:click="go($event)" class="box2">SW</div>
+
+        <div  v-if = "direction != 'South'" id="South" v-on:click="go($event)" class="box">S</div>
+        <div  v-if = "direction == 'South'" id="South" v-on:click="go($event)" class="box2">S</div>
+
+        <div v-if = "direction != 'SouthEast'" id="SouthEast" v-on:click="go($event)" class="box">SE</div>
+        <div v-if = "direction == 'SouthEast'" id="SouthEast" v-on:click="go($event)" class="box2">SE</div>
+
+      </div>
+
+      <ion-button class="autopilotButton" :disabled = "!flying || state == 'returningHome'" color="tertiary" @click="drop">Drop</ion-button>
+      <ion-button  v-if = "state != 'returningHome' && state != 'onHearth'"  class="autopilotButton" :disabled = "!flying" color="tertiary" @click="returnToLaunch">Return to launch</ion-button>
+      <ion-button v-if = "state == 'returningHome'"  class="autopilotButton" :disabled = "true" color="secondary">Returning ...</ion-button>
+      <ion-button v-if = "state == 'onHearth'"  class="autopilotButton" :disabled = "true" color="primary">On hearth</ion-button>
+
+      <ion-grid style="border-style: solid; position:fixed;width:80%; bottom: 10px;">
+      <ion-row>
+        <ion-col> 
+          <ion-item style = "font-size: 9px; ">
+            <ion-label >Altitude</ion-label>
+            {{altitude}} 
+          </ion-item>
         </ion-col>
-        <ion-col col-9>
-          <ion-item>
-            <ion-input v-model="heading" readonly> </ion-input>
+        <ion-col> 
+          <ion-item style = "font-size: 9px;">
+            <ion-label >Battery</ion-label>
+            {{battery}}
           </ion-item>
         </ion-col>
       </ion-row>
-      <ion-row v-if = "connected" style="margin-top: 1%;">
-        <ion-col col-3>
-          <ion-button v-if = "connected" @click="takeOff" style="width: 100%; height: 100%">Take off to</ion-button>
+      <ion-row>
+        <ion-col>
+          <ion-item style = "font-size: 9px; ">
+            <ion-label >Speed</ion-label>
+            {{groundSpeed}}
+          </ion-item>
+         
         </ion-col>
-        <ion-col col-9>
-          <ion-item>
-            <ion-input v-model="altitude"> </ion-input>
+        <ion-col>
+          <ion-item style = "font-size: 9px; ">
+            <ion-label >Heading</ion-label>
+            {{heading}}
           </ion-item>
         </ion-col>
       </ion-row>
-      <ion-row v-if = "connected" style="margin-top: 1%;">
-        <ion-col col-3>
-          <ion-button @click="getGroundSpeed" style="width: 100%; height: 100%">Get drone ground speed</ion-button>
-        </ion-col>
-        <ion-col col-9>
-          <ion-item>
-            <ion-input v-model="groundSpeed" readonly> </ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      <ion-row v-if = "connected" style="margin-top: 1%;">
-        <ion-col col-3>
-          <ion-button @click="getCurrentAltitude" style="width: 100%; height: 100%">Get drone altitude</ion-button>
-        </ion-col>
-        <ion-col col-9>
-          <ion-item>
-            <ion-input v-model="currentAltitude" readonly> </ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      <ion-row v-if = "connected" style="margin-top: 1%;">
-        <ion-col col-3>
-          <ion-button v-if = "connected" @click="getActualPosition" style="width: 100%; height: 100%">Get actual position</ion-button>
-        </ion-col>
-        <ion-col col-6>
-          <ion-item>
-            <ion-label floating>Latitude: </ion-label>
-            <ion-input v-model="current_lat" readonly> </ion-input>
-          </ion-item>
-        </ion-col>
-        <ion-col col-9>
-          <ion-item class="padding-left-2px">
-            <ion-label floating>Longitude: </ion-label>
-            <ion-input v-model="current_lng" readonly> </ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      <ion-row v-if = "connected" style="margin-top: 1%;">
-        <ion-col col-3>
-          <ion-button @click="goToPosition" style="width: 100%; height: 100%">Go to position</ion-button>
-        </ion-col>
-        <ion-col col-6>
-          <ion-item>
-            <ion-label floating>Latitude: </ion-label>
-            <ion-input v-model="goToLat"> </ion-input>
-          </ion-item>
-        </ion-col>
-        <ion-col col-9>
-          <ion-item class="padding-left-2px">
-            <ion-label floating>Longitude: </ion-label>
-            <ion-input v-model="goToLng"> </ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      <ion-button v-if = "connected" @click="returnToLaunch" style="margin-top: 2%; width: 100%; height: 10%">Return to launch</ion-button>
+      </ion-grid>
+      </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script>
 import { defineComponent, inject, onMounted, ref } from 'vue';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonInput, IonRow, IonCol, IonLabel } from '@ionic/vue';
-import { useMQTT } from 'mqtt-vue-hook'
+import { IonPage,alertController , IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonInput, IonRow, IonCol, IonLabel } from '@ionic/vue';
+import { useMQTT } from 'mqtt-vue-hook' 
 
 export default  defineComponent({
   name: 'AutopilotPage',
-  components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonInput, IonRow, IonCol, IonLabel },
+  components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonRow, IonCol, IonLabel },
 
   setup() {
 
     const emitter = inject('emitter');
     const mqttHook = useMQTT()
+    let state = ref('connected');
+    let armed = ref(false);
+    let flying = ref(false);
     let connected = ref(false);
     let altitude = ref(undefined);
-    let current_lat = ref(undefined);
-    let current_lng = ref(undefined);
-    let heading = ref(undefined);
     let groundSpeed = ref(undefined);
-    let currentAltitude = ref(undefined);
-    let goToLat = ref(undefined);
-    let goToLng = ref(undefined);
-    let position = ref(undefined);
+    let heading = ref(undefined);
+    let battery = ref(undefined);
+    let direction = ref(undefined);
+    const presentAlert = async () => {
+        const alert = await alertController.create({
+          header: 'Alert',
+          subHeader: 'You are not flying',
+          buttons: ['OK'],
+        });
+
+        await alert.present();
+      };
+
 
     onMounted(() => {
-      mqttHook.registerEvent('autopilotService/mobileApp/droneHeading', (topic, message) => {
-        heading.value = message
-      })
+      mqttHook.subscribe("autopilotService/mobileApp/telemetryInfo", 1)
 
-      mqttHook.registerEvent('autopilotService/mobileApp/dronePosition', (topic, message) => {
-        position.value = message
-      })
+      mqttHook.registerEvent('autopilotService/mobileApp/telemetryInfo', (topic, message) => {
+        const data = JSON.parse(message)
+        console.log ('telem ', data)
+        state.value = data['state']
+     
+        if (data['state'] == 'armed')
+           armed.value = true
+             
+        if (data['state'] == 'disarmed')
+           armed.value = false
+        
+        if (data['state'] == 'flying')
+           flying.value = true
+        
+        if (data['state'] == 'onHearth')
+        {
+           flying.value = false;
+           armed.value = false;
+        }
 
-      mqttHook.registerEvent('autopilotService/mobileApp/droneAltitude', (topic, message) => {
-        currentAltitude.value = message
-      })
 
-      mqttHook.registerEvent('autopilotService/mobileApp/droneGroundSpeed', (topic, message) => {
-        groundSpeed.value = message
+        battery.value = data['battery']
+        heading.value = data['heading']
+        altitude.value = data['altitude']
+        groundSpeed.value = data['groundSpeed'].toFixed(2);
+
       })
+    
     })
+  
 
+    function go (event) {
+      console.log ('entro')
+      if (!flying.value){
+        presentAlert()
+      } else {
+        let dir = event.currentTarget.id;
+        direction.value = dir
+        mqttHook.publish("mobileApp/autopilotService/go", dir, 1);
+      }
+    }
+    function connect() {
+      state.value = 'connecting'
+      mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
+      connect.value = true;
+      state.value = 'connected'
+    }
     function armDrone() {
-      connected.value = true
-      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1)
+      state.value = 'arming';
+      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
     }
 
     function disarmDrone() {
@@ -139,40 +181,10 @@ export default  defineComponent({
       mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
     }
 
-    function getDroneHeading() {
-      mqttHook.publish("mobileApp/autopilotService/getDroneHeading", "", 1)
-      mqttHook.subscribe("autopilotService/mobileApp/droneHeading", 1)
-    }
-
     function takeOff() {
-      mqttHook.publish("mobileApp/autopilotService/takeOff", altitude.value, 1)
+      state.value = 'takingOff'
+      mqttHook.publish("mobileApp/autopilotService/takeOff", "", 1)
     }
-
-    function getActualPosition(){
-      mqttHook.publish("mobileApp/autopilotService/getDronePosition", "", 1)
-      mqttHook.subscribe("autopilotService/mobileApp/dronePosition", 1)
-      let fromBytesToString = ref(undefined)
-      fromBytesToString.value = new TextDecoder("utf-8").decode(position.value)
-      let positionSplitted = fromBytesToString.value.split("*")
-      current_lat.value = positionSplitted[0]
-      current_lng.value = positionSplitted[1]
-    }
-
-    function getGroundSpeed(){
-      mqttHook.publish("mobileApp/autopilotService/getDroneGroundSpeed", "", 1)
-      mqttHook.subscribe("autopilotService/mobileApp/droneGroundSpeed", 1)
-    }
-
-    function getCurrentAltitude(){
-      mqttHook.publish("mobileApp/autopilotService/getDroneAltitude", "", 1)
-      mqttHook.subscribe("autopilotService/mobileApp/droneAltitude", 1)
-    }
-
-    function goToPosition(){
-      let positionStr = goToLat.value + "*" + goToLng.value
-      mqttHook.publish("mobileApp/autopilotService/goToPosition", positionStr, 1)
-    }
-
     function returnToLaunch(){
       mqttHook.publish("mobileApp/autopilotService/returnToLaunch", "", 1)
     }
@@ -180,23 +192,22 @@ export default  defineComponent({
     return {
       takeOff,
       altitude,
-      getActualPosition,
-      current_lat,
-      current_lng,
-      getDroneHeading,
-      heading,
-      getGroundSpeed,
       groundSpeed,
-      getCurrentAltitude,
-      currentAltitude,
-      goToLat,
-      goToLng,
-      goToPosition,
       returnToLaunch,
       connected,
       armDrone,
       disarmDrone,
       emitter,
+      armed,
+      flying,
+      go,
+      state,
+      heading,
+      battery,
+      connect,
+      presentAlert,
+      direction
+
     }
   }
 });
@@ -204,9 +215,44 @@ export default  defineComponent({
 
 <style>
 
-  .armDisarmButton {
+  .autopilotButton {
     display: flex;
-    margin: 5%;
+    margin: 1%;
   }
 
+  .direction {
+    display: grid;
+    grid-template-rows: 100px 100px 100px;
+    grid-template-columns: 100px 100px 100px;
+    text-align: center;
+    width:80%;
+    margin-left: 5%;
+
+  }
+
+
+  body {
+    display: flex;
+    justify-content: center;
+  }
+  .box {
+    background: #444;
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: yellowgreen;
+    font-size: 18px;
+    margin: 5px
+  }
+  .box2 {
+    background: rgb(233, 226, 226);
+    border: 1px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(224, 16, 16);
+    font-size: 18px;
+    margin: 5px
+  }
 </style>

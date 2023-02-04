@@ -6,6 +6,22 @@
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
+      <div style = "width:90%; margin-left:5%">
+      <ion-button class="cameraButton" color="tertiary" @click="takePicture">Take picture</ion-button>
+      <ion-button v-if = "!videoStream" class="cameraButton" @click="videoStreamToggle" color="tertiary">Start video stream</ion-button>
+      <ion-button v-if = "videoStream" class="cameraButton" @click="videoStreamToggle" color="secondary">Stop video stream</ion-button>
+      <canvas style = "margin-left: 2%; margin-top: 20%; margin-bottom:20%; width:96%; height:100%; border-style: solid" id = "output"></canvas>
+      <div style = "position:fixed;width:90%;  margin-left: 5%;bottom: 50px;">
+      <ion-button color="success" @click="setNormal()">Normal</ion-button>
+      <ion-button color="secondary" @click="setBlued()">Blued</ion-button>
+      <ion-button color="medium" @click="setGrey()">Gray</ion-button>
+      <ion-button color="dark" @click="setCanny()">Canny</ion-button>
+      </div >
+      </div>
+    </ion-content>
+
+<!-- 
+    <ion-content :fullscreen="true">
       <ion-row>
         <ion-col col-1>
           <ion-button style="width:100%" @click="startVideoStream">Start video stream</ion-button>
@@ -41,12 +57,14 @@
           </ion-item>
         </ion-list>
       </ion-content>
-    </ion-content>
+    </ion-content> -->
   </ion-page>
 </template>
 
 <script>
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonRow, IonCol, IonList, IonItem, IonSelect, IonSelectOption } from '@ionic/vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/vue';
+//import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonRow, IonCol, IonList, IonItem, IonSelect, IonSelectOption } from '@ionic/vue';
+
 import { onMounted,defineComponent, ref } from 'vue'
 import * as cv from 'opencv.js'
 import { useMQTT } from 'mqtt-vue-hook'
@@ -55,10 +73,12 @@ const mqttHook = useMQTT()
 
 export default  defineComponent({
   name: 'CameraPage',
-  components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton, IonRow, IonCol, IonList, IonItem, IonSelect, IonSelectOption },
+  //components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton, IonRow, IonCol, IonList, IonItem, IonSelect, IonSelectOption },
+  components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton },
 
   setup () {
     let mode = ref('Normal');   
+    let videoStream = ref(false);
         
     onMounted(() => {
 
@@ -68,20 +88,13 @@ export default  defineComponent({
           img.src = "data:image/jpg;base64,"+message;
           img.onload = () => {  
             let dst = new cv.Mat();
-            let source = cv.imread(img);
-            cv.cvtColor(source, source, cv.COLOR_RGB2GRAY, 0);
+            console.log ('mode ', mode.value)
+           
 
-            if (mode.value == 'Shovel'){
-              cv.Sobel(source, dst, cv.CV_8U, 1, 0, 3, 1, 0, cv.BORDER_DEFAULT);
-            }
+            // let source = cv.imread(img);
+            // cv.cvtColor(source, source, cv.COLOR_RGB2GRAY, 0);
 
-            if (mode.value == 'Scharr') {
-              cv.Scharr(source, dst, cv.CV_8U, 1, 0, 1, 0, cv.BORDER_DEFAULT);
-            }
-
-            if (mode.value == 'Laplacian') {
-              cv.Laplacian(source, dst, cv.CV_8U, 1, 1, 0, cv.BORDER_DEFAULT);
-            }
+        
 
             if (mode.value == 'Normal'){
               dst = cv.imread(img);
@@ -90,7 +103,7 @@ export default  defineComponent({
             if (mode.value == 'Gray') {
               let mat = cv.imread(img);
               dst = new cv.Mat();
-              cv.cvtColor(mat, dst, cv.COLOR_RGB2GRAY,0);
+              cv.cvtColor(mat, dst, cv.COLOR_RGB2GRAY);
               mat.delete()
             }
 
@@ -109,12 +122,7 @@ export default  defineComponent({
               mat.delete()
             }
             
-            if(mode.value == 'Pinked'){
-              let mat = cv.imread(img);
-              dst = new cv.Mat();
-              cv.cvtColor(mat, dst, cv.COLOR_RGB2YCrCb,0);
-              mat.delete()
-            }
+       
 
             cv.imshow('output',dst);
           };
@@ -122,6 +130,7 @@ export default  defineComponent({
       }
       
       mqttHook.registerEvent('cameraService/mobileApp/videoFrame', (topic, message) => {
+        console.log ('recibo frame')
         openCVFunction.options(topic, message)
       })
 
@@ -131,25 +140,65 @@ export default  defineComponent({
     })
     
     function startVideoStream () {
+      mqttHook.subscribe("cameraService/mobileApp/videoFrame", 1); 
+
       mqttHook.publish("mobileApp/cameraService/startVideoStream", "", 1)
-      mqttHook.subscribe("cameraService/mobileApp/videoFrame", 1);
     }
 
-      function stopVideoStream () {
+    function stopVideoStream () {
       mqttHook.publish("mobileApp/cameraService/stopVideoStream", "", 1)
     }
 
     function takePicture () {
-      mqttHook.publish("mobileApp/cameraService/takePicture", "", 1)
+      console.log ('take')
       mqttHook.subscribe("cameraService/mobileApp/picture", 1)
+      mqttHook.publish("mobileApp/cameraService/takePicture", "", 1)
+
     }
-    
+    function videoStreamToggle () {
+      if (!videoStream.value) {
+        videoStream.value = true;
+        mqttHook.subscribe("cameraService/mobileApp/videoFrame", 1); 
+        mqttHook.publish("mobileApp/cameraService/startVideoStream", "", 1)
+      } else {
+        videoStream.value = false;
+        mqttHook.publish("mobileApp/cameraService/stopVideoStream", "", 1)
+      }
+
+    }
+    function setNormal () {
+        mode.value ="Normal"
+    }
+    function setGrey () {
+        mode.value ="Gray"
+    }
+    function setCanny () {
+        mode.value ="Canny"
+    }
+    function setBlued () {
+        mode.value ="Blued"
+    }
     return {
         startVideoStream,
         stopVideoStream,
         takePicture,
-        mode
+        videoStream,
+        videoStreamToggle,
+        mode,
+        setNormal,
+        setBlued,
+        setGrey, 
+        setCanny
     }
   }
 });
 </script>
+<style>
+
+  .cameraButton {
+    display: flex;
+    margin: 1%;
+  }
+
+
+</style>

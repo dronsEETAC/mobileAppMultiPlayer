@@ -25,7 +25,7 @@ import './theme/variables.css';
 
 import BootstrapVue3  from 'bootstrap-vue-3'
 import  BootstrapVueIcons  from 'bootstrap-vue-3'
-
+ 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue-3/dist/bootstrap-vue-3.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
@@ -40,7 +40,10 @@ app.use(IonicVue)
 app.use(router) 
 
 app.provide('emitter', emitter);
-app.use(mqttVueHook, 'mqtt://localhost:8083', {
+
+app.use(mqttVueHook, 'mqtt://10.10.10.1:8000', {
+//app.use(mqttVueHook, 'ws://broker.hivemq.com:8000/mqtt', {
+//app.use(mqttVueHook, 'mqtt://localhost:8000', {
   clean: false,
   keepalive: 60,
   clientId: 'MobileAppDEE',
