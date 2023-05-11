@@ -18,6 +18,11 @@
           </ion-item>
         </ion-col>
       </ion-row>
+      <ion-button class="startStopSequenceButton" style="height: 5%" @click="getPosition">Get position</ion-button>
+      <ion-item style = "font-size: 9px; ">
+            <ion-label >Position</ion-label>
+            {{position}}
+      </ion-item>
     </ion-content>
   </ion-page>
 </template>
@@ -37,6 +42,7 @@ export default  defineComponent({
     let seconds = ref("");
     let connected = ref(true);
     const mqttHook = useMQTT()
+    let position = ref (100)
 
     function startLedSequence(){
       connected.value = false
@@ -51,6 +57,23 @@ export default  defineComponent({
       connected.value = true
       mqttHook.publish("mobileApp/LEDsService/stopLEDsSequence", "", 1)
     }
+    function getPosition(){
+      if("geolocation" in navigator) {
+        console.log ('vamos')
+     
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            console.log ('tengo ', pos)
+            position.value = pos.coords.latitude;
+          }, 
+          err => {
+           console.log ('error: ' + err.message);
+          })
+      } else {
+        console.log ('no hay geolocation')
+      }
+    }
+
 
     return {
         startLedSequence,
@@ -58,6 +81,8 @@ export default  defineComponent({
         stopLedSequence,
         connected,
         seconds,
+        position,
+        getPosition
     };
   },
 });

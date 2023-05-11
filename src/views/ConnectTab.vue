@@ -27,6 +27,7 @@
       })
       
       function connect () {
+        console.log ('connect')
         mqttHook.publish("mobileApp/autopilotService/connect", "", 1)
       }
       return {

@@ -24,8 +24,8 @@
         <div v-if = "direction != 'North'" id="North" v-on:click="go($event)" class="box" >N</div>
         <div v-if = "direction == 'North'" id="North" v-on:click="go($event)" class="box2" >N</div>
 
-        <div v-if = "direction != 'NorthEast'" id="NorthEst" v-on:click="go($event)" class="box">NE</div>
-        <div v-if = "direction == 'NorthEast'" id="NorthEst" v-on:click="go($event)" class="box2">NE</div>
+        <div v-if = "direction != 'NorthEast'" id="NorthEast" v-on:click="go($event)" class="box">NE</div>
+        <div v-if = "direction == 'NorthEast'" id="NorthEast" v-on:click="go($event)" class="box2">NE</div>
 
         <div v-if = "direction != 'West'" id="West" v-on:click="go($event)" class="box">W</div>
         <div v-if = "direction == 'West'" id="West" v-on:click="go($event)" class="box2">W</div>
@@ -166,12 +166,14 @@ export default  defineComponent({
       }
     }
     function connect() {
+      console.log ('connect')
       state.value = 'connecting'
       mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
       connect.value = true;
       state.value = 'connected'
     }
     function armDrone() {
+      console.log ('arm')
       state.value = 'arming';
       mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
     }
