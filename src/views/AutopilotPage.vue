@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { defineComponent, inject, onMounted, ref } from 'vue';
+import { defineComponent, inject, onMounted, ref , onUpdated} from 'vue';
 import { IonPage,alertController , IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonInput, IonRow, IonCol, IonLabel } from '@ionic/vue';
 import { useMQTT } from 'mqtt-vue-hook' 
 
@@ -119,9 +119,12 @@ export default  defineComponent({
 
         await alert.present();
       };
-
+    onUpdated(() => {
+      console.log ('on updated')
+    })
 
     onMounted(() => {
+      console.log ('on mounted')
       mqttHook.subscribe("autopilotService/mobileApp/telemetryInfo", 1)
 
       mqttHook.registerEvent('autopilotService/mobileApp/telemetryInfo', (topic, message) => {

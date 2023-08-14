@@ -64,7 +64,7 @@ export default  defineComponent({
         navigator.geolocation.getCurrentPosition(
           pos => {
             console.log ('tengo ', pos)
-            position.value = pos.coords.latitude;
+            position.value = pos.coords.latitude + "," + pos.coords.longitude;
           }, 
           err => {
            console.log ('error: ' + err.message);
