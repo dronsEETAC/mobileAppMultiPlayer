@@ -65,6 +65,7 @@ export default  defineComponent({
           pos => {
             console.log ('tengo ', pos)
             position.value = pos.coords.latitude + "," + pos.coords.longitude;
+            mqttHook.publish("mobileApp/autopilotService/position", position.value, 1)
           }, 
           err => {
            console.log ('error: ' + err.message);
