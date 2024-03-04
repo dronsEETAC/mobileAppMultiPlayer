@@ -1,14 +1,18 @@
-# Mobile APP
-![dashboardDemo](https://user-images.githubusercontent.com/100842082/213115045-5d912126-e94c-4f48-93bd-4e28fc3db477.png)
+# Ionic-Vue Mobile App
+![IonicAppDemo](https://user-images.githubusercontent.com/100842082/213981154-11cb3b23-81cc-4eac-ad5d-25c1dac7714a.png)
 
-The Mobile APP is a front-end module developed in Ionic Vue. It allows the user to do a bunch of things, including:
+
+The IonicVueMobileAppDEE is a front-end module developed in Ionic Vue. It allows the user to do a bunch of things, including:
 - Showing the picture/video stream sent by the camera service
 - Free guiding the drone
 - Showing telemetry data
 - Starting/Stopping a LED sequence in the drone
 
 ## Demo
-This video es a short demo of some of the functionalities of the Mobile APP. In the video:
+This video es a short demo of some of the functionalities of the Mobile APP.   
+[Ionic App in action](https://www.youtube.com/watch?v=iDihSNpX-gs)   
+
+In the video:
 1. A mosquitto broker is started in port 1884. This will serve as internal broker.   
 2. The ionic vue app is started. 
 3. Both the camera service and the autopilot service are started in global and simulation modes, and will user the public broker broker.hivemq.com as external broker. Note that the camera service may take some time to start (be patient).    
@@ -20,18 +24,28 @@ This video es a short demo of some of the functionalities of the Mobile APP. In 
 9. The app arms, takes offa and moves the drone in different directions before returning home. Some telemetry data are shown.    
 10. The app takes a pictures and gets the video stream, introducing different alterations in the image (gray, canny, etc.).     
 
+## Installation and contribution
+In order to run and contribute to the modules implemented in Vue, you need to install Node.js (version v16.14.2) and @vue/cli version 4.5.15 and @ionic/cli (in case of the Mobile app). We recomend Visual Code as IDE for development in Vue.    
+To contribute to must follow the contribution protocol describen in the main repo of the Drone Engineering Ecosystem.
+[![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-MainRepo-brightgreen.svg)](https://github.com/dronsEETAC/DroneEngineeringEcosystemDEE)
+To run the application, after cloning the repo in your laptop you must execute these commands:
+```
+cd IonicVueMobileAppDEE
+npm install
+npm run serve
+```
+When running the code you may get errors such as this:
 
-The Dashboard is started. A configuration pannel is presented to the user who can decide modes, external brokers, configure the monitor (record messages published in brokers) and configure the data service (that currently can only record positions).  
-5. The user get pictures and video stream from the camera service.   
-6. The user connect with the autopilot (the simulator). Note that telemetry info comes as soon as the autopilot is connected.  
-7. The user arms and takes off. The Mission Planner pannel is shown to chech that everything is working. Note that the drone 8. stops at 5 meters of altitude, ignoring the altitud introduced by the user.    
-The user guides the drone in different directions and returns to home.   
-9. A simple mission planner is opened to introduce and run a flight plan. Note that we can indicate the waypoints where the drone must take a picture and send it to the Dashboard.    
-10. A second option form flight planning is used to generate a scan of a rectangular area.   
-11. The flight plan is save into a file and reloaded to be run again.     
-   
-You can also play with a third option for flight planning (spiral) or to start/stop the monitor from the main pannel of the Dashboard, or to show the positions recorded by the data service in case it was asked to do so or to play with the LEDs service.   
+Module not found: Error: Can't resolve 'fs' in 'C:\Users\USER\Documents\Miguel\DEE_all_repos\IonicVueMobileAppDEE\node_modules\opencv.js'
 
-
+In this case, you must include the following code in the package.json in node-modules/opencv.js:     
+```
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false,
+    "crypto": false
+  }
+  ```
 
 
