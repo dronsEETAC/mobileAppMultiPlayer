@@ -7,13 +7,15 @@
     </ion-header>
     <ion-content :fullscreen="true">
       <div style = "width:80%; margin-left:10%">
-      <ion-button v-if = "state != 'arming' && state != 'takingOff'  && !flying && !armed" class="autopilotButton" color="tertiary" @click="armDrone">Arm drone</ion-button>
-      <ion-button v-if = "state == 'arming'" class="autopilotButton" :disabled = "true" color="secondary">Arming...</ion-button>
-      <ion-button v-if = "armed" class="autopilotButton" :disabled = "true" color="primary">Armed</ion-button>
+      <ion-button v-if = "!connected" class="autopilotButton" color="tertiary"  :disabled = "true" @click="armDrone">Arm drone</ion-button>
+
+      <ion-button v-if = "connected && state != 'arming' && state != 'takingOff'  && !flying && !armed" class="autopilotButton" color="tertiary" @click="armDrone">Arm drone</ion-button>
+      <ion-button v-if = "connected && state == 'arming'" class="autopilotButton" :disabled = "true" color="secondary">Arming...</ion-button>
+      <ion-button v-if = "connected && armed" class="autopilotButton" :disabled = "true" color="primary">Armed</ion-button>
 
       <ion-button  v-if = "state != 'takingOff' && !flying" class="autopilotButton" :disabled = "!armed" color="tertiary" @click="takeOff">Take off</ion-button>
       <ion-button  v-if = "state == 'takingOff'" class="autopilotButton" :disabled = "true" color="secondary" >Taking off ...</ion-button>
-      <ion-button  v-if = "flying" class="autopilotButton" :disabled = "true" color="primary" >Flying</ion-button>
+      <ion-button  v-if = "flying" class="autopilotButton" :disabled = "true" color="primary" >Flying</ion-button> 
 
 
 
@@ -101,7 +103,7 @@ export default  defineComponent({
 
     const emitter = inject('emitter');
     const mqttHook = useMQTT()
-    let state = ref('connected');
+    let state = ref('connecting');
     let armed = ref(false);
     let flying = ref(false);
     let connected = ref(false);
@@ -128,6 +130,7 @@ export default  defineComponent({
       mqttHook.subscribe("autopilotService/mobileApp/telemetryInfo", 1)
 
       mqttHook.registerEvent('autopilotService/mobileApp/telemetryInfo', (topic, message) => {
+        connected.value = true
         const data = JSON.parse(message)
         console.log ('telem ', data)
         state.value = data['state']
