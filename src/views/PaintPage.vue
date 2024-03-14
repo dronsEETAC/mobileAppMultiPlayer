@@ -53,38 +53,11 @@
       <ion-button  v-if = "state != 'returningHome' && state != 'onHearth'"  class="autopilotButton" :disabled = "!flying" color="tertiary" @click="returnToLaunch">Return to launch</ion-button>
       <ion-button v-if = "state == 'returningHome'"  class="autopilotButton" :disabled = "true" color="secondary">Returning ...</ion-button>
       <ion-button v-if = "state == 'onHearth'"  class="autopilotButton" :disabled = "true" color="primary">On hearth</ion-button>
-    
-      <ion-grid style="border-style: solid; position:fixed;width:80%; bottom: 10px;">
-      <ion-row>
-        <ion-col> 
-          <ion-item style = "font-size: 9px; ">
-            <ion-label >Altitude</ion-label>
-            {{altitude}} 
-          </ion-item>
-        </ion-col>
-        <ion-col> 
-          <ion-item style = "font-size: 9px;">
-            <ion-label >Battery</ion-label>
-            {{battery}}
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>
-          <ion-item style = "font-size: 9px; ">
-            <ion-label >Speed</ion-label>
-            {{groundSpeed}}
-          </ion-item>
-         
-        </ion-col>
-        <ion-col>
-          <ion-item style = "font-size: 9px; ">
-            <ion-label >Heading</ion-label>
-            {{heading}}
-          </ion-item>
-        </ion-col>
-      </ion-row>
-      </ion-grid>
+      <ion-button   v-if = "!pintando" class="autopilotButton"  color="primary" @click="dibujar">Dibujar</ion-button>
+      <ion-button  v-if = "pintando" class="autopilotButton"  color="danger" @click="pararDibujar">Dejar de dibujar</ion-button>
+      <ion-button  v-if = "!borrando" class="autopilotButton"  color="primary" @click="borrar">Borrar</ion-button>
+      <ion-button  v-if = "borrando"  class="autopilotButton"  color="danger" @click="pararBorrar">Dejar de borrar</ion-button>
+   
       </div>
     </ion-content>
   </ion-page>
@@ -96,8 +69,8 @@ import { IonPage,alertController , IonHeader, IonToolbar, IonTitle, IonContent, 
 import { useMQTT } from 'mqtt-vue-hook' 
 
 export default  defineComponent({
-  name: 'AutopilotPage',
-  components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonRow, IonCol, IonLabel },
+  name: 'PaintPage',
+  components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton },
 
   setup() {
 
@@ -112,6 +85,8 @@ export default  defineComponent({
     let heading = ref(undefined);
     let battery = ref(undefined);
     let direction = ref(undefined);
+    let pintando = ref(false);
+    let borrando = ref(false);
     const presentAlert = async () => {
         const alert = await alertController.create({
           header: 'Alert',
@@ -196,7 +171,22 @@ export default  defineComponent({
     function returnToLaunch(){
       mqttHook.publish("mobileApp/autopilotService/returnToLaunch", "", 1)
     }
-   
+    function dibujar(){
+      pintando.value = true
+      mqttHook.publish("webApp/miMain/empiezaADibujar", "", 1)
+    }
+    function pararDibujar(){
+      pintando.value = false
+      mqttHook.publish("webApp/miMain/paraDeDibujar", "", 1)
+    }
+    function borrar(){
+      borrando.value = true
+      mqttHook.publish("webApp/miMain/empiezaABorrar", "", 1)
+    }
+    function pararBorrar(){
+      borrando.value = false
+      mqttHook.publish("webApp/miMain/paraDeBorrar", "", 1)
+    }
 
     return {
       takeOff,
@@ -215,7 +205,13 @@ export default  defineComponent({
       battery,
       connect,
       presentAlert,
-      direction
+      direction,
+      dibujar,
+      pararDibujar,
+      borrar,
+      pararBorrar,
+      pintando,
+      borrando
 
     }
   }

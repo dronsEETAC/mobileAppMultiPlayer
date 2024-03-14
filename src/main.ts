@@ -39,7 +39,7 @@ const app = createApp(App)
 app.use(IonicVue)
 app.use(router) 
 
-app.provide('emitter', emitter);
+app.provide('emitter', emitter); 
 
 //app.use(mqttVueHook, 'mqtt://10.10.10.1:8000', {
 app.use(mqttVueHook, 'ws://dronseetac.upc.edu:8000/mqtt', {
@@ -50,7 +50,7 @@ app.use(mqttVueHook, 'ws://dronseetac.upc.edu:8000/mqtt', {
   keepalive: 60,
   clientId: `mqtt_client_${Math.random().toString(16).substring(2, 10)}`,
   connectTimeout: 8000,
-  username: 'dronsEETAC',
+  username: 'dronsEETAC', 
   password: 'mimara1456.'
 })
 

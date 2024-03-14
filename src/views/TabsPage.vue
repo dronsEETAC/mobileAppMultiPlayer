@@ -13,9 +13,9 @@
           <ion-label>Camera</ion-label>
         </ion-tab-button>
         
-        <ion-tab-button tab="LEDsTab" href='/tabs/leds'>
-          <ion-icon :icon="sunny" />
-          <ion-label>LEDs</ion-label>
+        <ion-tab-button tab="LEDsTab" href='/tabs/paint'>
+          <ion-icon :icon="brushOutline"/>
+          <ion-label>Paint</ion-label>
         </ion-tab-button>
 
         <ion-tab-button tab="DisconectTab" href='/'>
@@ -30,7 +30,7 @@
 <script>
 import { defineComponent } from 'vue';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { airplaneOutline, cameraOutline, exitOutline, sunny } from 'ionicons/icons';
+import { airplaneOutline, cameraOutline, exitOutline, brushOutline } from 'ionicons/icons';
 
 export default defineComponent({
   name: 'TabsPage',
@@ -38,7 +38,7 @@ export default defineComponent({
   setup() {
     return {
       cameraOutline, 
-      sunny, 
+      brushOutline, 
       airplaneOutline,
       exitOutline
     }

@@ -4,7 +4,7 @@ import TabsPage from '../views/TabsPage.vue'
 import ConnectTab from '../views/ConnectTab.vue'
 import AutopilotPage from '../views/AutopilotPage.vue'
 import CameraPage from '../views/CameraPage.vue'
-import LEDsPage from '../views/LEDsPage.vue'
+import PaintPage from '../views/PaintPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -26,8 +26,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "CameraTab",
       },
       {
-        path: 'leds',
-        component: LEDsPage,
+        path: 'paint',
+        component: PaintPage,
         name: "LEDsTab"
       }
     ]
