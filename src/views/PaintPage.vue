@@ -5,18 +5,20 @@
         <ion-title class="ion-text-center" text-align: center>Autopilot Section</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true"> 
       <div style = "width:80%; margin-left:10%">
-      <ion-button v-if = "!connected" class="autopilotButton" color="tertiary"  :disabled = "true" @click="armDrone">Arm drone</ion-button>
+      <ion-button v-if = "!connected" class="autopilotButton" color="tertiary"  @click="connect">Conectar</ion-button>
+      
+      <ion-button v-if = "connected && idPlayer == 0" class="autopilotButton" color="danger"  :disabled = "true">Conectado</ion-button>
+      <ion-button v-if = "connected && idPlayer == 1" class="autopilotButton" color="tertiary"  :disabled = "true">Conectado</ion-button>
+      <ion-button v-if = "connected && idPlayer == 2" class="autopilotButton" color="success"  :disabled = "true">Conectado</ion-button>
+      <ion-button v-if = "connected && idPlayer == 3" class="autopilotButton" color="warning"  :disabled = "true">Conectado</ion-button>
 
-      <ion-button v-if = "connected && state != 'arming' && state != 'takingOff'  && !flying && !armed" class="autopilotButton" color="tertiary" @click="armDrone">Arm drone</ion-button>
-      <ion-button v-if = "connected && state == 'arming'" class="autopilotButton" :disabled = "true" color="secondary">Arming...</ion-button>
-      <ion-button v-if = "connected && armed" class="autopilotButton" :disabled = "true" color="primary">Armed</ion-button>
 
-      <ion-button  v-if = "state != 'takingOff' && !flying" class="autopilotButton" :disabled = "!armed" color="tertiary" @click="takeOff">Take off</ion-button>
-      <ion-button  v-if = "state == 'takingOff'" class="autopilotButton" :disabled = "true" color="secondary" >Taking off ...</ion-button>
-      <ion-button  v-if = "flying" class="autopilotButton" :disabled = "true" color="primary" >Flying</ion-button> 
-
+      <ion-button  v-if = "!connected" class="autopilotButton" :disabled = "!connected" color="tertiary">Despega</ion-button>
+      <ion-button  v-if = "connected && state != 'takingOff' && state != 'flying'" class="autopilotButton"  color="tertiary" @click="takeOff">Despega</ion-button>
+      <ion-button  v-if = "connected && state == 'takingOff'" class="autopilotButton"  color="tertiary">Despegando...</ion-button>
+      <ion-button  v-if = "connected && state == 'flying'" class="autopilotButton"  color="tertiary">En el aire</ion-button>
 
 
       <div class="direction">
@@ -57,7 +59,9 @@
       <ion-button  v-if = "pintando" class="autopilotButton"  color="danger" @click="pararDibujar">Dejar de dibujar</ion-button>
       <ion-button  v-if = "!borrando" class="autopilotButton"  color="primary" @click="borrar">Borrar</ion-button>
       <ion-button  v-if = "borrando"  class="autopilotButton"  color="danger" @click="pararBorrar">Dejar de borrar</ion-button>
-   
+      
+      <ion-button    class="autopilotButton"  color="danger" @click="borrarTodo">Borrar todo</ion-button>
+
       </div>
     </ion-content>
   </ion-page>
@@ -87,10 +91,21 @@ export default  defineComponent({
     let direction = ref(undefined);
     let pintando = ref(false);
     let borrando = ref(false);
-    const presentAlert = async () => {
+    let idPlayer = ref (0);
+    let randomId = 0
+    const presentAlert1 = async () => {
         const alert = await alertController.create({
-          header: 'Alert',
-          subHeader: 'You are not flying',
+          header: 'Alerta',
+          subHeader: 'No estas volando',
+          buttons: ['OK'],
+        });
+
+        await alert.present();
+      };
+    const presentAlert2 = async () => {
+        const alert = await alertController.create({
+          header: 'Error',
+          subHeader: 'Lo siento. Tendras que esperar',
           buttons: ['OK'],
         });
 
@@ -102,36 +117,46 @@ export default  defineComponent({
 
     onMounted(() => {
       console.log ('on mounted')
-      mqttHook.subscribe("autopilotService/+/telemetryInfo", 1)
+      mqttHook.subscribe("multiPlayerDash/mobileApp/#", 1)
 
-      mqttHook.registerEvent('autopilotService/+/telemetryInfo', (topic, message) => {
-        connected.value = true
-        const data = JSON.parse(message)
-        console.log ('telem ', data)
-        state.value = data['state']
-     
-        if (data['state'] == 'armado')
-           armed.value = true
-             
-        if (data['state'] == 'desarmado')
-           armed.value = false
-        
-        if (data['state'] == 'volando')
-           flying.value = true
-        
-        if (data['state'] == 'onHearth')
-        {
-           flying.value = false;
-           armed.value = false;
+      mqttHook.registerEvent('multiPlayerDash/mobileApp/accepted/+', (topic, message) => {
+        // en la cuarta posición del topic viene el identificador aleatorio para verificar
+        // que la respuesta es para este jugador
+        if (Number (topic.split('/')[3] ) == randomId){
+          if (!connected.value) {
+            connected.value = true
+            //el identificador del jugador es un número entre el 0 y el 3 (jugadores rojo, azul, verde y amarillo)
+            idPlayer.value = message
+            console.log ('aceptado: idPlayer ', idPlayer.value)
+          }
         }
-
-
-        battery.value = data['battery']
-        heading.value = data['heading']
-        altitude.value = data['altitude']
-        groundSpeed.value = data['groundSpeed'].toFixed(2);
-
+        
       })
+      mqttHook.registerEvent('multiPlayerDash/mobileApp/notAccepted/+', (topic, message) => {
+        // ya hay 4 jugadores. Este tendrá que esperar
+        if (Number (topic.split('/')[3] ) == randomId){
+          presentAlert2()
+        }
+      })
+
+      mqttHook.registerEvent('multiPlayerDash/mobileApp/flying/+', (topic, message) => {
+        // el la cuarta posición del topic está el identificador del jugador
+        // para verificar que el mensaje es para él
+        // así será en todos los mensajes que se reciban
+        if (Number (topic.split('/')[3] ) == idPlayer.value){
+          flying.value = true
+          state.value = 'flying'
+          console.log ('en el aire el dron ', idPlayer.value)
+        }
+      })
+    
+      mqttHook.registerEvent('multiPlayerDash/mobileApp/atHome/+', (topic, message) => {
+        if (Number (topic.split('/')[3] ) == idPlayer.value){
+          flying.value = false
+          state.value = 'onHearth'
+        }
+      })
+    
     
     })
   
@@ -139,63 +164,58 @@ export default  defineComponent({
     function go (event) {
       console.log ('entro')
       if (!flying.value){
-        presentAlert()
+        presentAlert1()
       } else {
         let dir = event.currentTarget.id;
         direction.value = dir
-        mqttHook.publish("mobileApp/autopilotService/go", dir, 1);
+        // a todas las ordenes tengo que añadir en el topic el identificador del jugador
+        mqttHook.publish("mobileApp/multiPlayerDash/go/"+ idPlayer.value, dir);
       }
     }
     function connect() {
       console.log ('connect')
       state.value = 'connecting'
-      mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
-      connect.value = true;
-      state.value = 'connected'
-    }
-    function armDrone() {
-      console.log ('arm')
-      state.value = 'arming';
-      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
-    }
-
-    function disarmDrone() {
-      connected.value = false
-      mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
+      // al solicitar conexión añado en el topic un identificador aleatorio
+      // que el dashboard añadirá a su respuesta, para saber que esa respuesta es para mi
+      randomId = Math.random() 
+      mqttHook.publish("mobileApp/multiPlayerDash/connect/"+randomId);
     }
 
     function takeOff() {
       state.value = 'takingOff'
-      mqttHook.publish("mobileApp/autopilotService/takeOff", "10", 1)
+      mqttHook.publish("mobileApp/multiPlayerDash/arm_takeOff/"+ idPlayer.value)
     }
     function returnToLaunch(){
-      mqttHook.publish("mobileApp/autopilotService/returnToLaunch", "", 1)
+      state.value = 'returningHome'
+      mqttHook.publish("mobileApp/multiPlayerDash/RTL/"+ idPlayer.value)
     }
     function dibujar(){
       pintando.value = true
-      mqttHook.publish("webApp/miMain/empiezaADibujar", "", 1)
+      console.log ('vamos a dibujar')
+      mqttHook.publish("mobileApp/multiPlayerDash/startDrawing/"+ idPlayer.value)
     }
     function pararDibujar(){
       pintando.value = false
-      mqttHook.publish("webApp/miMain/paraDeDibujar", "", 1)
+      mqttHook.publish("mobileApp/multiPlayerDash/stopDrawing/"+ idPlayer.value)
     }
     function borrar(){
       borrando.value = true
-      mqttHook.publish("webApp/miMain/empiezaABorrar", "", 1)
+      mqttHook.publish("mobileApp/multiPlayerDash/startRemovingDrawing/"+ idPlayer.value)
     }
     function pararBorrar(){
       borrando.value = false
-      mqttHook.publish("webApp/miMain/paraDeBorrar", "", 1)
+      mqttHook.publish("mobileApp/multiPlayerDash/stopRemovingDrawing/"+ idPlayer.value)
     }
 
+    function borrarTodo(){
+      mqttHook.publish("mobileApp/multiPlayerDash/removeAll/"+ idPlayer.value)
+    }
     return {
       takeOff,
       altitude,
       groundSpeed,
       returnToLaunch,
       connected,
-      armDrone,
-      disarmDrone,
       emitter,
       armed,
       flying,
@@ -204,14 +224,17 @@ export default  defineComponent({
       heading,
       battery,
       connect,
-      presentAlert,
+      presentAlert1,
+      presentAlert2,
       direction,
       dibujar,
       pararDibujar,
       borrar,
       pararBorrar,
+      borrarTodo,
       pintando,
-      borrando
+      borrando,
+      idPlayer
 
     }
   }
