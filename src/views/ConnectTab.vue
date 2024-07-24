@@ -5,11 +5,17 @@
           <ion-title class="ion-text-center">Drone Engineering Ecosystem</ion-title>
         </ion-toolbar>
       </ion-header>
-      <ion-content :fullscreen="true">
+      <ion-content >
         <ion-button  v-if = "broker == 'hivemq'" expand="full" color="danger"  @click="changeBroker">Cambia a dronseetac</ion-button>
         <ion-button  v-if = "broker == 'dronseetac'"  expand="full" color="danger"  @click="changeBroker">Cambia a hivemq</ion-button>
+        <ion-button @click = 'connect'  expand="full" href = "/tabs/paint">Jugar</ion-button>
 
-        <ion-button @click = 'connect' class="connectButton" href = "/tabs">Connect to the external broker</ion-button>
+        <div style="display: flex; margin-top: 150px; margin-left: 40px; margin-right: 10px; position: relative;">
+          <div style="display: flex; position: relative;" >
+            <img :src="imagenURL" v-if="imagenURL" style="position: relative; width: 90%; height: 80%; top: -120px;" />
+          </div>
+        </div>
+     
       </ion-content>
     </ion-page>
 </template>
@@ -24,6 +30,7 @@
     components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonButton },
 
     setup() {
+      const imagenURL = ref('entrada.png');
       const mqttHook = useMQTT()
       let broker = ref('dronseetac');
       onMounted(() => {
@@ -65,7 +72,8 @@
       return {
         connect,
         changeBroker,
-        broker
+        broker,
+        imagenURL
 
       }
     }
@@ -76,7 +84,7 @@
 
 .connectButton {
   margin: 10%;
-  height: 80%;
+  height: 10%;
   width: 80%;
 }
 
