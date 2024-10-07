@@ -118,7 +118,7 @@ export default  defineComponent({
     onMounted(() => {
       console.log ('on mounted')
       mqttHook.subscribe("multiPlayerDash/mobileApp/#", 1)
-
+    
       mqttHook.registerEvent('multiPlayerDash/mobileApp/accepted/+', (topic, message) => {
         // en la cuarta posición del topic viene el identificador aleatorio para verificar
         // que la respuesta es para este jugador
@@ -148,6 +148,15 @@ export default  defineComponent({
           state.value = 'flying'
           console.log ('en el aire el dron ', idPlayer.value)
         }
+      })
+      mqttHook.registerEvent('multiPlayerDash/mobileApp/flyingForAll', (topic, message) => {
+        // el la cuarta posición del topic está el identificador del jugador
+        // para verificar que el mensaje es para él
+        // así será en todos los mensajes que se reciban
+
+        flying.value = true
+        state.value = 'flying'
+        console.log ('recibo flyingForAll')
       })
     
       mqttHook.registerEvent('multiPlayerDash/mobileApp/atHome/+', (topic, message) => {
